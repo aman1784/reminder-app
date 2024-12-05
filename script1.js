@@ -1,22 +1,28 @@
-
 // Load existing reminders from localStorage when the page loads
 let reminders = JSON.parse(localStorage.getItem("reminders")) || [];
 
-// Request notification permission on page load
+// Request notification permission on page load after user interaction
 document.addEventListener("DOMContentLoaded", () => {
+    const setReminderBtn = document.getElementById("setReminderBtn");
+    setReminderBtn.addEventListener("click", requestNotificationPermission);
+});
+
+// Function to request notification permission explicitly after user action
+function requestNotificationPermission() {
     if (Notification.permission === "default") {
         Notification.requestPermission()
             .then((permission) => {
                 if (permission === "granted") {
                     console.log("Notifications enabled.");
-                } else {
-                    alert("Please enable notifications to get reminders.");
+                } else if (permission === "denied") {
+                    alert("Notifications are blocked. Please enable them in browser settings.");
                 }
             })
-            .catch((err) => console.error("Notification permission error:", err));
+            .catch((err) => console.error("Error requesting notification permission:", err));
     }
-});
+}
 
+// Event listener for the 'Set Reminder' button
 document.getElementById("setReminderBtn").addEventListener("click", function () {
     const reminderText = document.getElementById("reminderInput").value;
     const frequency = parseInt(document.getElementById("frequencyInput").value) * 60000; // Convert to milliseconds
@@ -40,8 +46,8 @@ document.getElementById("setReminderBtn").addEventListener("click", function () 
     }
 });
 
+// Function to schedule reminders
 function scheduleReminder(id, text, frequency) {
-    // Set an interval for each reminder
     const reminder = reminders.find((r) => r.id === id);
     if (reminder) {
         reminder.interval = setInterval(() => {
@@ -52,17 +58,19 @@ function scheduleReminder(id, text, frequency) {
     }
 }
 
+// Function to send notifications
 function sendNotification(message) {
     if (Notification.permission === "granted") {
         new Notification("Reminder", {
             body: message,
-            icon: "reminder-icon.png", // Optional: Provide a valid icon path
+            icon: "./reminder-icon.png", // Ensure the icon path is relative and correct
         });
     } else {
         console.log("Notification permission denied.");
     }
 }
 
+// Function to update the reminder list on the UI
 function updateReminderList() {
     const reminderList = document.getElementById("reminderList");
     reminderList.innerHTML = "";
@@ -78,6 +86,7 @@ function updateReminderList() {
     });
 }
 
+// Function to cancel reminders
 function cancelReminder(id) {
     const reminderIndex = reminders.findIndex((reminder) => reminder.id === id);
     if (reminderIndex !== -1) {
@@ -90,7 +99,7 @@ function cancelReminder(id) {
     }
 }
 
-// Reschedule reminders on page load
+// Function to restore reminders on page load
 function restoreReminders() {
     reminders.forEach((reminder) => {
         const elapsed = Date.now() - reminder.lastTriggered;
