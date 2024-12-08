@@ -63,7 +63,7 @@ function sendNotification(message) {
     if (Notification.permission === "granted") {
         new Notification("Reminder", {
             body: message,
-            icon: "./reminder-icon.png", // Ensure the icon path is relative and correct
+            icon: "reminder-icon.png", // Ensure the icon path is relative and correct
         });
     } else {
         console.log("Notification permission denied.");
